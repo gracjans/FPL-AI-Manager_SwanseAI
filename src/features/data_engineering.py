@@ -1,16 +1,16 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
-from utils.data_loader import load_data
+from src.data.data_loader import load_raw_data
 
 
-def preprocess_baseline_data(season):
+def process_baseline_data(season):
     """
     Preprocesses the data for the baseline model.
     """
 
     # Drop the columns that are not needed for the baseline model
-    data = load_data(season)
+    data = load_raw_data(season)
 
     # add 'total_points_next_gameweek' column where total_points_next_gameweek = total_points from next 'GW' for each 'element'
     data['total_points_next_gameweek'] = data.groupby('element')['total_points'].shift(-1)
