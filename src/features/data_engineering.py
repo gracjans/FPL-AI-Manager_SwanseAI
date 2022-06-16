@@ -1,8 +1,8 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
-from src.data.data_loader import load_merged_gw_data
-from src.data.data_loader import load_players_raw_data
+from src.data.data_loader import load_merged_gw
+from src.data.data_loader import load_players_raw
 
 
 def reverse_processing(x_data, x_data_scaler, extracted_target=None):
@@ -29,7 +29,7 @@ def get_merged_seasons():
     # load merged gw data for all seasons
     data = {}
     for season in seasons:
-        data[season] = load_merged_gw_data(season)
+        data[season] = load_merged_gw(season)
 
     # get common features for every season
     common_features = data['2018-19'].columns.intersection(data['2019-20'].columns).intersection(data['2020-21'].columns)
@@ -41,7 +41,7 @@ def get_merged_seasons():
     # load 'players_raw' for every season
     players_raw = {}
     for season in seasons:
-        players_raw[season] = load_players_raw_data(season)
+        players_raw[season] = load_players_raw(season)
 
     # leave only 'id' and 'element_type' columns
     player_position = {}
@@ -70,7 +70,7 @@ def preprocess_single_season(season):
     if season not in ['2020-21', '2021-22']:
         raise ValueError('Function suitable only for new seasons! Season must be either 2020-21 or 2021-22')
 
-    data = load_merged_gw_data(season)
+    data = load_merged_gw(season)
 
     # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
     data['total_points_next_gameweek'] = data.groupby('element')['total_points'].shift(-1)
