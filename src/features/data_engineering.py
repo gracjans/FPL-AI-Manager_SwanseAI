@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
-from src.data.data_loader import load_raw_data
+from src.data.data_loader import load_merged_gw_data
 
 
 def reverse_processing(x_data, x_data_scaler, extracted_target=None):
@@ -26,7 +26,7 @@ def process_baseline_data(season):
     if season not in ['2020-21', '2021-22']:
         raise ValueError('Function suitable only for new seasons! Season must be either 2020-21 or 2021-22')
 
-    data = load_raw_data(season)
+    data = load_merged_gw_data(season)
 
     # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
     data['total_points_next_gameweek'] = data.groupby('element')['total_points'].shift(-1)
