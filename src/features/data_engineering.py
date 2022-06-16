@@ -19,7 +19,7 @@ def reverse_processing(x_data, x_data_scaler, extracted_target=None):
         return x
 
 
-def data_merged_seasons():
+def get_merged_seasons():
     """
     Load and merge together data from all seasons, deleting incompatible columns and adding position.
     """
@@ -62,7 +62,7 @@ def data_merged_seasons():
     return data_merged
 
 
-def baseline_data_single_season(season):
+def preprocess_single_season(season):
     """
     Preprocesses the single season data for the baseline model.
     """
