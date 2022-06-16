@@ -23,13 +23,15 @@ def process_baseline_data(season):
     Preprocesses the data for the baseline model.
     """
 
-    # Drop the columns that are not needed for the baseline model
+    if season not in ['2020-21', '2021-22']:
+        raise ValueError('Function suitable only for new seasons! Season must be either 2020-21 or 2021-22')
+
     data = load_raw_data(season)
 
-    # add 'total_points_next_gameweek' column where total_points_next_gameweek = total_points from next 'GW' for each 'element'
+    # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
     data['total_points_next_gameweek'] = data.groupby('element')['total_points'].shift(-1)
 
-    # create data_2021_processed dataframe without 'team', 'fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score'
+    # Drop the columns that are not needed for the baseline model
     data_processed = data.drop(['team', 'fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score'], axis=1)
 
     # one-hot encode 'position' column
