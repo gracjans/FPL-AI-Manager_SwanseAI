@@ -18,7 +18,7 @@ def reverse_processing(x_data, x_data_scaler, extracted_target=None):
         return x
 
 
-def process_baseline_data(season):
+def baseline_data_single_season(season):
     """
     Preprocesses the data for the baseline model.
     """
