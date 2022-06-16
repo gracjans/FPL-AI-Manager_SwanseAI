@@ -9,3 +9,9 @@ def load_raw_data(season):
         return pandas.read_csv(data_path, encoding='latin-1')
     except FileNotFoundError:
         raise FileNotFoundError("ERROR: Please enter valid season! Available seasons range from '2016-17' to '2021-22'")
+
+
+def load_average_pts_data():
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    data_path = root_dir + f"\\data\\external\\average_pts.csv"
+    return pandas.read_csv(data_path, encoding='latin-1')
