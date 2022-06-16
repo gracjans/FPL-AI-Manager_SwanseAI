@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from src.data.data_loader import load_merged_gw_data
+from src.data.data_loader import load_players_raw_data
 
 
 def reverse_processing(x_data, x_data_scaler, extracted_target=None):
@@ -18,9 +19,52 @@ def reverse_processing(x_data, x_data_scaler, extracted_target=None):
         return x
 
 
+def data_merged_seasons():
+    """
+    Load and merge together data from all seasons, deleting incompatible columns and adding position.
+    """
+
+    seasons = ['2016-17', '2017-18', '2018-19', '2019-20', '2020-21', '2021-22']
+
+    # load merged gw data for all seasons
+    data = {}
+    for season in seasons:
+        data[season] = load_merged_gw_data(season)
+
+    # get common features for every season
+    common_features = data['2018-19'].columns.intersection(data['2019-20'].columns).intersection(data['2020-21'].columns)
+
+    # select common features columns for all seasons
+    for season in data:
+        data[season] = data[season][common_features]
+
+    # load 'players_raw' for every season
+    players_raw = {}
+    for season in seasons:
+        players_raw[season] = load_players_raw_data(season)
+
+    # leave only 'id' and 'element_type' columns
+    player_position = {}
+    for season in players_raw:
+        player_position[season] = players_raw[season][['id', 'element_type']].rename(columns={'id': 'element', 'element_type': 'position'})
+
+    # change values from element type to 1: GK, 2: DEF, 3: MID, 4: FWD
+    for season in player_position:
+        player_position[season]['position'].replace({1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD'}, inplace=True)
+
+    # add position column to every season dataset
+    for season in player_position:
+        data[season] = pd.merge(data[season], player_position[season], on='element', how='left')
+
+    # make data one single dataframe
+    data_merged = pd.concat(data.values(), ignore_index=True)
+
+    return data_merged
+
+
 def baseline_data_single_season(season):
     """
-    Preprocesses the data for the baseline model.
+    Preprocesses the single season data for the baseline model.
     """
 
     if season not in ['2020-21', '2021-22']:
