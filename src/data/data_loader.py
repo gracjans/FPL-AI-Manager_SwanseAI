@@ -5,6 +5,16 @@ import pandas
 def load_merged_gw_data(season):
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     data_path = root_dir + f"\\data\\raw\\Fantasy-Premier-League\\{season}\\gws\\merged_gw.csv"
+    return __read_file(data_path)
+
+
+def load_players_raw_data(season):
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    data_path = root_dir + f"\\data\\raw\\Fantasy-Premier-League\\{season}\\players_raw.csv"
+    return __read_file(data_path)
+
+
+def __read_file(data_path):
     try:
         return pandas.read_csv(data_path, encoding='latin-1')
     except FileNotFoundError:
