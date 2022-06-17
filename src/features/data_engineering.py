@@ -56,6 +56,10 @@ def get_merged_seasons():
     for season in player_position:
         data[season] = pd.merge(data[season], player_position[season], on='element', how='left')
 
+    # add 'season' column to every season dataset
+    for season in data:
+        data[season]['season'] = season
+
     # make data one single dataframe
     data_merged = pd.concat(data.values(), ignore_index=True)
 
