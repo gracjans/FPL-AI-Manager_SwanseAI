@@ -77,7 +77,7 @@ def preprocess_merged_seasons():    # TODO: merge this function with preprocess_
     data['total_points_next_gameweek'] = data.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
 
     # Drop the columns that are not needed for the baseline model
-    data_processed = data.drop(['team', 'fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score'], axis=1)
+    data_processed = data.drop(['fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score'], axis=1)
 
     # one-hot encode 'position' column
     data_processed = pd.get_dummies(data_processed, columns=['position'])
