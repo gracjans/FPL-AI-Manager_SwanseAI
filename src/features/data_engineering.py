@@ -73,7 +73,7 @@ def preprocess_single_season(season):
     data = load_merged_gw(season)
 
     # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
-    data['total_points_next_gameweek'] = data.groupby('element')['total_points'].shift(-1)
+    data['total_points_next_gameweek'] = data.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
 
     # Drop the columns that are not needed for the baseline model
     data_processed = data.drop(['team', 'fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score'], axis=1)
