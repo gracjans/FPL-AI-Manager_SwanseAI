@@ -62,7 +62,7 @@ def get_merged_seasons():
     return data_merged
 
 
-def preprocess_merged_seasons():    
+def preprocess_merged_seasons():    # TODO: merge this function with preprocess_single_season!
     """
     Preprocesses the merged seasons data for the baseline model.
     """
