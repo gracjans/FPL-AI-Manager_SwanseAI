@@ -66,9 +66,15 @@ def get_merged_seasons():
     return data_merged
 
 
-def preprocess_merged_seasons():    # TODO: merge this function with preprocess_single_season!
+def preprocess_merged_seasons(random_split=True, test_subset=None):    # TODO: merge this function with preprocess_single_season!
     """
     Preprocesses the merged seasons data for the baseline model.
+
+    Args:
+        random_split: If True, the data is split into train and test sets randomly,
+            if False, the data is split into train and test sets according to the test_subset parameter.
+        test_subset: If random_split is False, this parameter specifies subset of the data used for the test set
+            test_subset example: (['2016-17', [35,36,37,38,39]], ['2021-22', [27,28,29,30]], ['season', [gws]])
     """
     target_features = ['name', 'GW', 'element', 'total_points_next_gameweek', 'season']
     data = get_merged_seasons()
@@ -102,8 +108,18 @@ def preprocess_merged_seasons():    # TODO: merge this function with preprocess_
     # concatenate data_extract_target and x_data_scaled
     x_data_scaled = pd.concat([data_extract_target, x_data_scaled], axis=1)
 
-    # split data into train and test sets
-    x_train, x_test, y_train, y_test = train_test_split(x_data_scaled, y, test_size=0.2, random_state=42)
+    if random_split:
+        # split data into train and test sets randomly
+        x_train, x_test, y_train, y_test = train_test_split(x_data_scaled, y, test_size=0.2, random_state=42)
+    else:
+        # split data into train and test sets according to each list in test_subset    # TODO: make it separate function
+        x_train, x_test, y_train, y_test = pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+        for subset in test_subset:
+            x_test = pd.concat([x_test, x_data_scaled.loc[x_data_scaled['season'].isin([subset[0]]) & x_data_scaled['GW'].isin(subset[1])]])
+            y_test = pd.concat([y_test, y.loc[x_data_scaled['season'].isin([subset[0]]) & x_data_scaled['GW'].isin(subset[1])]])
+
+        x_train = pd.concat([x_train, x_data_scaled.drop(x_test.index)])
+        y_train = pd.concat([y_train, y.drop(y_test.index)])
 
     # extract target and drop it from x data
     x_train_data_extract_target = x_train[target_features]
