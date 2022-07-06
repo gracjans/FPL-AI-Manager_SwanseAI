@@ -1,7 +1,8 @@
+import numpy as np
 import pandas as pd
 
 
-def merge_reversed_data_with_predictions(model, x_test, y_test, x_test_reversed):
+def merge_reversed_data_with_predictions(model: object, x_test: np.array, y_test: np.array, x_test_reversed: pd.DataFrame):
     """
     Merges the reversed data with the predictions.
     """
