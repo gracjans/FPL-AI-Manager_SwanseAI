@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -5,7 +6,7 @@ from src.data.data_loader import load_merged_gw
 from src.data.data_loader import load_players_raw
 
 
-def reverse_processing(x_data, x_data_scaler, extracted_target=None):
+def reverse_processing(x_data: np.array, x_data_scaler: MinMaxScaler, extracted_target: pd.DataFrame = None):
     """
     Reverses the preprocessing of the data and optionally concatenates it with the extracted target data
     """
@@ -66,7 +67,7 @@ def get_merged_seasons():
     return data_merged
 
 
-def preprocess_merged_seasons(random_split=True, test_subset=None):    # TODO: merge this function with preprocess_single_season!
+def preprocess_merged_seasons(random_split: bool = True, test_subset: tuple = None):    # TODO: merge this function with preprocess_single_season!
     """
     Preprocesses the merged seasons data for the baseline model.
 
@@ -131,7 +132,7 @@ def preprocess_merged_seasons(random_split=True, test_subset=None):    # TODO: m
     return (x_train, y_train), (x_test, y_test), (x_train_data_extract_target, x_test_data_extract_target), x_scaler
 
 
-def preprocess_single_season(season):
+def preprocess_single_season(season: str):
     """
     Preprocesses the single season data for the baseline model.
     """
