@@ -20,7 +20,7 @@ def reverse_processing(x_data: np.array, x_data_scaler: MinMaxScaler, extracted_
         return x
 
 
-def get_merged_seasons():
+def get_merged_seasons_data():
     """
     Load and merge together data from all seasons, deleting incompatible columns and adding position.
     """
@@ -67,18 +67,23 @@ def get_merged_seasons():
     return data_merged
 
 
-def preprocess_merged_seasons(random_split: bool = True, test_subset: tuple = None):    # TODO: merge this function with preprocess_single_season!
+def preprocess_seasons_data(random_split: bool = True, test_subset: tuple = None, season: str = None):
     """
-    Preprocesses the merged seasons data for the baseline model.
+    Preprocesses the merged seasons data.
 
     Args:
         random_split: If True, the data is split into train and test sets randomly,
             if False, the data is split into train and test sets according to the test_subset parameter.
         test_subset: If random_split is False, this parameter specifies subset of the data used for the test set
             test_subset example: (['2016-17', [35,36,37,38,39]], ['2021-22', [27,28,29,30]], ['season', [gws]])
+        season: If specified, only this season is preprocessed.
     """
     target_features = ['name', 'GW', 'element', 'total_points_next_gameweek', 'season']
-    data = get_merged_seasons()
+    data = get_merged_seasons_data()
+
+    # if season parameter is specified, only select data from that season
+    if season is not None:
+        data = data[data['season'] == season]
 
     # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
     data['total_points_next_gameweek'] = data.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
@@ -121,59 +126,6 @@ def preprocess_merged_seasons(random_split: bool = True, test_subset: tuple = No
 
         x_train = pd.concat([x_train, x_data_scaled.drop(x_test.index)])
         y_train = pd.concat([y_train, y.drop(y_test.index)])
-
-    # extract target and drop it from x data
-    x_train_data_extract_target = x_train[target_features]
-    x_train.drop(target_features, axis=1, inplace=True)
-
-    x_test_data_extract_target = x_test[target_features]
-    x_test.drop(target_features, axis=1, inplace=True)
-
-    return (x_train, y_train), (x_test, y_test), (x_train_data_extract_target, x_test_data_extract_target), x_scaler
-
-
-def preprocess_single_season(season: str):
-    """
-    Preprocesses the single season data for the baseline model.
-    """
-
-    if season not in ['2020-21', '2021-22']:
-        raise ValueError('Function suitable only for new seasons! Season must be either 2020-21 or 2021-22')
-
-    target_features = ['name', 'GW', 'element', 'total_points_next_gameweek']
-    data = load_merged_gw(season)
-
-    # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
-    data['total_points_next_gameweek'] = data.sort_values('kickoff_time').groupby('element')['total_points'].shift(-1)
-
-    # Drop the columns that are not needed for the baseline model
-    data_processed = data.drop(['team', 'fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score'], axis=1)
-
-    # one-hot encode 'position' column
-    data_processed = pd.get_dummies(data_processed, columns=['position'])
-
-    # change 'was_home' column to binary
-    data_processed['was_home'] = data_processed['was_home'].map({True: 1, False: 0})
-
-    # drop rows with NaN values
-    data_processed.dropna(inplace=True)
-
-    # extract 'name', 'GW', 'element' and 'total_points_next_gameweek' from data_processed
-    data_extract_target = data_processed[target_features]
-
-    # prepare x, y data
-    x = data_processed.drop(target_features, axis=1)
-    y = data_processed['total_points_next_gameweek']
-
-    # scale x data
-    x_scaler = MinMaxScaler(feature_range=(0, 1))
-    x_data_scaled = pd.DataFrame(x_scaler.fit_transform(x), index=x.index, columns=x.columns)
-
-    # concatenate data_extract_target and x_data_scaled
-    x_data_scaled = pd.concat([data_extract_target, x_data_scaled], axis=1)
-
-    # split data into train and test sets
-    x_train, x_test, y_train, y_test = train_test_split(x_data_scaled, y, test_size=0.2, random_state=42)
 
     # extract target and drop it from x data
     x_train_data_extract_target = x_train[target_features]
