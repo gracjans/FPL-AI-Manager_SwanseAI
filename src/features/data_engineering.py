@@ -118,14 +118,7 @@ def preprocess_seasons_data(random_split: bool = True, test_subset: tuple = None
         # split data into train and test sets randomly
         x_train, x_test, y_train, y_test = train_test_split(x_data_scaled, y, test_size=0.2, random_state=42)
     else:
-        # split data into train and test sets according to each list in test_subset    # TODO: make it separate function
-        x_train, x_test, y_train, y_test = pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-        for subset in test_subset:
-            x_test = pd.concat([x_test, x_data_scaled.loc[x_data_scaled['season'].isin([subset[0]]) & x_data_scaled['GW'].isin(subset[1])]])
-            y_test = pd.concat([y_test, y.loc[x_data_scaled['season'].isin([subset[0]]) & x_data_scaled['GW'].isin(subset[1])]])
-
-        x_train = pd.concat([x_train, x_data_scaled.drop(x_test.index)])
-        y_train = pd.concat([y_train, y.drop(y_test.index)])
+        x_train, x_test, y_train, y_test = __subset_train_test_split(x_data_scaled, y, test_subset)
 
     # extract target and drop it from x data
     x_train_data_extract_target = x_train[target_features]
@@ -135,3 +128,18 @@ def preprocess_seasons_data(random_split: bool = True, test_subset: tuple = None
     x_test.drop(target_features, axis=1, inplace=True)
 
     return (x_train, y_train), (x_test, y_test), (x_train_data_extract_target, x_test_data_extract_target), x_scaler
+
+
+def __subset_train_test_split(x: pd.DataFrame, y: pd.DataFrame, test_subset: tuple):
+    """
+    Split data into train and test sets according to each list in test_subset
+    """
+    x_train, x_test, y_train, y_test = pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+    for subset in test_subset:
+        x_test = pd.concat([x_test, x.loc[x['season'].isin([subset[0]]) & x['GW'].isin(subset[1])]])
+        y_test = pd.concat([y_test, y.loc[x['season'].isin([subset[0]]) & x['GW'].isin(subset[1])]])
+
+    x_train = pd.concat([x_train, x.drop(x_test.index)])
+    y_train = pd.concat([y_train, y.drop(y_test.index)])
+
+    return x_train, x_test, y_train, y_test
