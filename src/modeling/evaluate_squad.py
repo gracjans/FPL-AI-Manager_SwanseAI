@@ -3,6 +3,15 @@ import pandas as pd
 from src.data.data_loader import load_average_pts
 
 
+def get_average_pts(season: str, gameweek: int):
+    """
+    Returns the average squad points of FPL player in the given season and gameweek.
+    """
+
+    average_pts = load_average_pts()
+    return average_pts.loc[average_pts['GW'] == gameweek, [f'AVG_PTS_{season.replace("-", "/")}']].values[0][0]
+
+
 def squad_selection_without_constraints(predictions_merged: pd.DataFrame, season: str, gameweek: int):
     """
     Selects the best predicted squad for the given season and gameweek without squad value constraints.
@@ -33,11 +42,3 @@ def squad_selection_without_constraints(predictions_merged: pd.DataFrame, season
 
     return df_squad, df_total_points
 
-
-def get_average_pts(season: str, gameweek: int):
-    """
-    Returns the average squad points of FPL player in the given season and gameweek.
-    """
-
-    average_pts = load_average_pts()
-    return average_pts.loc[average_pts['GW'] == gameweek, [f'AVG_PTS_{season.replace("-", "/")}']].values[0][0]
