@@ -79,4 +79,4 @@ def evaluate_selected_squad_without_constraints(predictions_merged: pd.DataFrame
         mlflow.log_metric("difference", sum(selected_squad_points) - sum(real_player_average_points))
         mlflow.log_param("model name", model_name)
 
-        return results, selected_squad_points, real_player_average_points
+        return results, selected_squad_points, real_player_average_points, season_gameweeks
