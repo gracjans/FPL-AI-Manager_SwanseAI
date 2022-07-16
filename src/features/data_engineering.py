@@ -70,7 +70,7 @@ def get_merged_seasons_data():
     return data_merged
 
 
-def preprocess_seasons_data(random_split: bool = True, test_subset: tuple = None, season: str = None):
+def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True, test_subset: tuple = None, season: str = None):
     """
     Preprocesses the merged seasons data.
 
@@ -82,7 +82,11 @@ def preprocess_seasons_data(random_split: bool = True, test_subset: tuple = None
         season: If specified, only this season is preprocessed.
     """
     target_features = ['name', 'GW', 'element', 'total_points_next_gameweek', 'season']
-    data = get_merged_seasons_data()
+
+    if data is None:
+        data = get_merged_seasons_data()
+    else:
+        data = data.copy()
 
     # if season parameter is specified, only select data from that season
     if season is not None:
