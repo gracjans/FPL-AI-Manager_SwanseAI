@@ -96,7 +96,12 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
     data['total_points_next_gameweek'] = data.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
 
     # Drop the columns that are not needed for now
-    data_processed = data.drop(['fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score', 'transfers_balance'], axis=1)
+    data_processed = data.drop(['fixture', 'kickoff_time', 'opponent_team', 'round', 'transfers_balance'], axis=1)
+
+    try:
+        data_processed.drop(['team_h_score', 'team_a_score'], axis=1, inplace=True)
+    except KeyError:
+        pass
 
     # one-hot encode 'position' column
     data_processed = pd.get_dummies(data_processed, columns=['position'])
