@@ -64,6 +64,9 @@ def get_merged_seasons_data():
     # make data one single dataframe
     data_merged = pd.concat(data.values(), ignore_index=True)
 
+    # sort data by kickoff_time
+    data_merged.sort_values('kickoff_time', inplace=True, ignore_index=True)
+
     return data_merged
 
 
@@ -88,8 +91,8 @@ def preprocess_seasons_data(random_split: bool = True, test_subset: tuple = None
     # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
     data['total_points_next_gameweek'] = data.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
 
-    # Drop the columns that are not needed for the baseline model
-    data_processed = data.drop(['fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score'], axis=1)
+    # Drop the columns that are not needed for now
+    data_processed = data.drop(['fixture', 'kickoff_time', 'opponent_team', 'round', 'team_h_score', 'team_a_score', 'transfers_balance'], axis=1)
 
     # one-hot encode 'position' column
     data_processed = pd.get_dummies(data_processed, columns=['position'])
