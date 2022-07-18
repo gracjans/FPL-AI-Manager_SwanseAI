@@ -70,16 +70,45 @@ def get_merged_seasons_data():
     return data_merged
 
 
-def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True, test_subset: tuple = None, season: str = None):
+def update_team_score_feature(df):
+    """
+    Create feature 'player_team_score' - team_h_score if was_home, team_a_score otherwise and 'opponent_team_score' likewise
+    """
+    player_team_score = df.apply(lambda row: row['team_h_score'] if row['was_home'] else row['team_a_score'], axis=1)
+    opponent_team_score = df.apply(lambda row: row['team_a_score'] if row['was_home'] else row['team_h_score'], axis=1)
+
+    df.insert(list(df.columns).index('team_a_score'), 'player_team_score', player_team_score)
+    df.insert(list(df.columns).index('team_h_score'), 'opponent_team_score', opponent_team_score)
+    df.drop(['team_h_score', 'team_a_score'], axis=1, inplace=True)
+
+    return df
+
+
+def create_rolling_features(df, rolling_columns, times):
+    for t in times:
+        t_str = '-all' if t == 'all' else '-' + str(t)
+        t = df.groupby(['season', 'element'], as_index=False).size()['size'][0] if t == 'all' else t
+        for col in rolling_columns:
+            insert_loc = list(df.columns).index(col) + 1
+            df.insert(insert_loc, col + t_str, df.groupby(['season', 'element'], as_index=False)[col].rolling(t, min_periods=1).mean()[col])
+    return df
+
+
+def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True, test_subset: tuple = None, season: str = None,
+                            rolling_features: bool = False, rolling_columns: list = None, rolling_times: list = None):
     """
     Preprocesses the merged seasons data.
 
     Args:
+        data: data to preprocess. If None, preprocesses the merged seasons data.
         random_split: If True, the data is split into train and test sets randomly,
             if False, the data is split into train and test sets according to the test_subset parameter.
         test_subset: If random_split is False, this parameter specifies subset of the data used for the test set
             test_subset example: (['2016-17', [35,36,37,38,39]], ['2021-22', [27,28,29,30]], ['season', [gws]])
         season: If specified, only this season is preprocessed.
+        rolling_features: If True, the rolling features are created.
+        rolling_times: If rolling_features is True, this parameter specifies the rolling times.
+        rolling_columns: If rolling_features is True, this parameter specifies the features to be rolled.
     """
     target_features = ['name', 'GW', 'element', 'total_points_next_gameweek', 'season']
 
