@@ -39,7 +39,7 @@ def squad_selection_without_constraints(predictions_merged: pd.DataFrame, season
         df_top_11 = pd.concat((df_top_11, players), ignore_index=True)
 
     # get 'name', 'total_points_next_gameweek', 'transfers_balance', 'value' columns from df_top_11
-    df_squad = df_top_11[['name', 'total_points_next_gameweek', 'transfers_balance', 'value']]
+    df_squad = df_top_11[['name', 'total_points_next_gameweek', 'value']]
 
     df_total_points = df_top_11.total_points_next_gameweek.sum()
 
