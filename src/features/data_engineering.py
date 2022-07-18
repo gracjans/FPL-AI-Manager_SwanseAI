@@ -121,17 +121,17 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
     if season is not None:
         data = data[data['season'] == season]
 
-    if rolling_features:
-        data = create_rolling_features(data, rolling_columns, rolling_times)
+    # Change 'team_h_score' and 'team_a_score' to 'player_team_score' and 'opponent_team_score'
+    data_processed = update_team_score_feature(data)
 
     # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
-    data['total_points_next_gameweek'] = data.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
+    data_processed['total_points_next_gameweek'] = data_processed.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
+
+    if rolling_features:
+        data_processed = create_rolling_features(data_processed, rolling_columns, rolling_times)
 
     # Drop the columns that are not needed for now
-    data_processed = data.drop(['fixture', 'kickoff_time', 'opponent_team', 'round', 'transfers_balance'], axis=1)
-
-    # Change 'team_h_score' and 'team_a_score' to 'player_team_score' and 'opponent_team_score'
-    data_processed = update_team_score_feature(data_processed)
+    data_processed = data_processed.drop(['fixture', 'kickoff_time', 'opponent_team', 'round', 'transfers_balance'], axis=1)
 
     # one-hot encode 'position' column
     data_processed = pd.get_dummies(data_processed, columns=['position'])
