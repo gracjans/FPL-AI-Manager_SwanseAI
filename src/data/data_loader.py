@@ -1,5 +1,5 @@
 import os
-import pandas
+import pandas as pd
 
 
 def load_merged_gw(season: str):
@@ -16,7 +16,7 @@ def load_players_raw(season: str):
 
 def __read_file(data_path: str):
     try:
-        return pandas.read_csv(data_path, encoding='latin-1')
+        return pd.read_csv(data_path, encoding='latin-1')
     except FileNotFoundError:
         raise FileNotFoundError("ERROR: Please enter valid season! Available seasons range from '2016-17' to '2021-22'")
 
@@ -24,4 +24,4 @@ def __read_file(data_path: str):
 def load_average_pts():
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     data_path = root_dir + f"\\data\\external\\average_pts.csv"
-    return pandas.read_csv(data_path, encoding='latin-1')
+    return pd.read_csv(data_path, encoding='latin-1')
