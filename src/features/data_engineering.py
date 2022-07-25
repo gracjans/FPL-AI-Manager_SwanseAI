@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from src.data.data_loader import load_merged_gw, get_league_table, load_master_team_list
 from src.data.data_loader import load_players_raw
-from src.features.utils import idx_to_team_name, str_date_months_back
+from src.features.utils import idx_to_team_name, str_date_months_back, str_date_days_forward
 
 
 def reverse_processing(x_data: np.array, x_data_scaler: MinMaxScaler, extracted_target: pd.DataFrame = None):
@@ -97,14 +97,21 @@ def create_rolling_features(df, rolling_columns, times):
     return df
 
 
-def add_team_stats(row, master_team_list):
+def scrape_team_stats(row, master_team_list, table_dict):
     columns_to_get = ['Position', 'PPDA', 'OPPDA', 'G', 'GA', 'xG', 'NPxG', 'xGA', 'NPxGA', 'NPxGD', 'DC', 'ODC', 'xPTS']
     opponent_team = idx_to_team_name(master_team_list, row['opponent_next_gameweek'], row['season'])
 
     season_year = row['season'].split('-')[0]
-    date = row['kickoff_time'].split('T')[0]
+    date = str_date_days_forward(row['kickoff_time'].split('T')[0], 2)
+
+    key = date + '_' + opponent_team
+
+    # if key is in the dict, pass
+    if key in table_dict:
+        return
 
     date_back = str_date_months_back(date, 2)
+
     table = asyncio.run(get_league_table(season_year, date_back, date))
 
     # get row from table where Team == opponent_team
@@ -113,7 +120,14 @@ def add_team_stats(row, master_team_list):
     cols_normalize = table_opponent.filter(items=columns_to_get[3:]).columns
     table_opponent[cols_normalize] = table_opponent[cols_normalize].divide(table_opponent['M'], axis=0)
 
-    return table_opponent[columns_to_get].add_prefix('opponent_next_')
+    value = table_opponent[columns_to_get].add_prefix('opponent_next_')
+
+    table_dict[key] = value.to_dict()
+    len_dict = len(table_dict)
+    if len_dict % 50 == 0:
+        print(len_dict)
+
+    return True
 
 
 def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True, test_subset: tuple = None, season: str = None,
