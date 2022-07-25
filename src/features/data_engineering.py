@@ -1,9 +1,12 @@
+import asyncio
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
-from src.data.data_loader import load_merged_gw
+from src.data.data_loader import load_merged_gw, get_league_table, load_master_team_list
 from src.data.data_loader import load_players_raw
+from src.features.utils import idx_to_team_name, str_date_months_back
 
 
 def reverse_processing(x_data: np.array, x_data_scaler: MinMaxScaler, extracted_target: pd.DataFrame = None):
@@ -94,6 +97,25 @@ def create_rolling_features(df, rolling_columns, times):
     return df
 
 
+def add_team_stats(row, master_team_list):
+    columns_to_get = ['Position', 'PPDA', 'OPPDA', 'G', 'GA', 'xG', 'NPxG', 'xGA', 'NPxGA', 'NPxGD', 'DC', 'ODC', 'xPTS']
+    opponent_team = idx_to_team_name(master_team_list, row['opponent_next_gameweek'], row['season'])
+
+    season_year = row['season'].split('-')[0]
+    date = row['kickoff_time'].split('T')[0]
+
+    date_back = str_date_months_back(date, 2)
+    table = asyncio.run(get_league_table(season_year, date_back, date))
+
+    # get row from table where Team == opponent_team
+    table_opponent = table.loc[table['Team'] == opponent_team]
+
+    cols_normalize = table_opponent.filter(items=columns_to_get[3:]).columns
+    table_opponent[cols_normalize] = table_opponent[cols_normalize].divide(table_opponent['M'], axis=0)
+
+    return table_opponent[columns_to_get].add_prefix('opponent_next_')
+
+
 def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True, test_subset: tuple = None, season: str = None,
                             rolling_features: bool = False, rolling_columns: list = None, rolling_times: list = None):
     """
@@ -127,11 +149,23 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
     # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
     data_processed['total_points_next_gameweek'] = data_processed.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
 
+    # add column where opponent_next_gameweek = opponent_team from next 'GW' for each player (element)
+    data_processed['opponent_next_gameweek'] = data_processed.sort_values('kickoff_time').groupby(['season', 'element'])['opponent_team'].shift(-1)
+    data_processed = data_processed.dropna(subset=['opponent_next_gameweek']).astype({'opponent_next_gameweek': int})
+
+    master_team_list = load_master_team_list()
+
+    # for every row, get mean stats from last two months for each next gameweek opponent team
+    opponent_data = data_processed.apply(lambda row: add_team_stats(row, master_team_list), axis=1)
+    df_opponent = pd.concat([r for r in opponent_data], ignore_index=True)
+    data_processed = pd.concat([data_processed, df_opponent.set_index(data_processed.index)], axis=1)
+
     if rolling_features:
         data_processed = create_rolling_features(data_processed, rolling_columns, rolling_times)
 
     # Drop the columns that are not needed for now
-    data_processed = data_processed.drop(['fixture', 'kickoff_time', 'opponent_team', 'round', 'transfers_balance'], axis=1)
+    data_processed = data_processed.drop(['fixture', 'kickoff_time', 'opponent_team', 'round',
+                                          'transfers_balance', 'opponent_next_gameweek'], axis=1)
 
     # one-hot encode 'position' column
     data_processed = pd.get_dummies(data_processed, columns=['position'])
