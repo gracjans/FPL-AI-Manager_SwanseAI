@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 
 import aiohttp
@@ -59,3 +60,10 @@ def load_master_team_list():
     master_team_list_df.replace('Sheffield Utd', 'Sheffield United', inplace=True)
 
     return master_team_list_df
+
+
+def load_understat_team_stats(season: str):
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    data_path = root_dir + f"\\data\\raw\\Understat\\team-stats_{season}.json"
+    with open(data_path) as f:
+        return json.load(f)
