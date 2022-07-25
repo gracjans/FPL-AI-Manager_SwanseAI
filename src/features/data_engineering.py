@@ -138,7 +138,7 @@ def get_oponent_team_stats(row, master_team_list, team_stats):
 
 
 def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True, test_subset: tuple = None, season: str = None,
-                            rolling_features: bool = False, rolling_columns: list = None, rolling_times: list = None, opponent_team_stats: bool = True,):
+                            rolling_features: bool = False, rolling_columns: list = None, rolling_times: list = None, opponent_team_stats: bool = False):
     """
     Preprocesses the merged seasons data.
 
