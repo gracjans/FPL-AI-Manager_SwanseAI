@@ -61,7 +61,7 @@ def evaluate_selected_squad_without_constraints(predictions_merged: pd.DataFrame
         for season in test_subset:
             for gameweek in season[1]:
                 results.append(squad_selection_without_constraints(predictions_merged, season[0], gameweek))
-                season_gameweeks.append((season[0], gameweek))
+                season_gameweeks.append((season[0], gameweek + 1))
 
         # get total points gained by selected squad
         selected_squad_points = []
