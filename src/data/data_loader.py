@@ -36,4 +36,23 @@ async def get_league_table(season, start_date=None, end_date=None):
     async with aiohttp.ClientSession() as session:
         understat = Understat(session)
         table = await understat.get_league_table("EPL", season, start_date=start_date, end_date=end_date)
-        return pd.DataFrame(table[1:], columns=table[0])
+        df_table = pd.DataFrame(table[1:], columns=table[0])
+        df_table.insert(0, 'Position', df_table.index + 1)
+        return df_table
+
+
+def load_master_team_list():
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    data_path = root_dir + f"\\data\\raw\\Fantasy-Premier-League\\master_team_list.csv"
+    master_team_list_df = pd.read_csv(data_path, encoding='latin-1')
+
+    # Rename the teams in the master team list, that they are compatible with the teams names from Understat data.
+    master_team_list_df.replace('Man City', 'Manchester City', inplace=True)
+    master_team_list_df.replace('Man Utd', 'Manchester United', inplace=True)
+    master_team_list_df.replace('Spurs', 'Tottenham', inplace=True)
+    master_team_list_df.replace('West Brom', 'West Bromwich Albion', inplace=True)
+    master_team_list_df.replace('Newcastle', 'Newcastle United', inplace=True)
+    master_team_list_df.replace('Wolves', 'Wolverhampton Wanderers', inplace=True)
+    master_team_list_df.replace('Sheffield Utd', 'Sheffield United', inplace=True)
+
+    return master_team_list_df
