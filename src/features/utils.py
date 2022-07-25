@@ -11,3 +11,8 @@ def idx_to_team_name(master_team_list: pd.DataFrame, team: int, season: str):
 def str_date_months_back(date: str, months_back: int):
     # get date months back from date
     return (datetime.datetime.strptime(date, '%Y-%m-%d') - datetime.timedelta(days=months_back * 30)).strftime('%Y-%m-%d')
+
+
+def str_date_days_forward(date: str, days_forward: int):
+    # get date months back from date
+    return (datetime.datetime.strptime(date, '%Y-%m-%d') + datetime.timedelta(days=days_forward)).strftime('%Y-%m-%d')
