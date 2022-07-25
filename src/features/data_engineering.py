@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
-from src.data.data_loader import load_merged_gw, get_league_table, load_master_team_list
+from src.data.data_loader import load_merged_gw, get_league_table, load_master_team_list, load_understat_team_stats
 from src.data.data_loader import load_players_raw
 from src.features.utils import idx_to_team_name, str_date_months_back, str_date_days_forward
 
@@ -130,8 +130,15 @@ def scrape_team_stats(row, master_team_list, table_dict):
     return True
 
 
+def get_oponent_team_stats(row, master_team_list, team_stats):
+    opponent_team = idx_to_team_name(master_team_list, row['opponent_next_gameweek'], row['season'])
+    date = str_date_days_forward(row['kickoff_time'].split('T')[0], 2)
+    key = date + '_' + opponent_team
+    return pd.DataFrame(team_stats[row['season']][key])
+
+
 def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True, test_subset: tuple = None, season: str = None,
-                            rolling_features: bool = False, rolling_columns: list = None, rolling_times: list = None):
+                            rolling_features: bool = False, rolling_columns: list = None, rolling_times: list = None, opponent_team_stats: bool = True,):
     """
     Preprocesses the merged seasons data.
 
@@ -163,16 +170,23 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
     # add column where total_points_next_gameweek = total_points from next 'GW' for each player (element)
     data_processed['total_points_next_gameweek'] = data_processed.sort_values('kickoff_time').groupby(['season', 'element'])['total_points'].shift(-1)
 
-    # add column where opponent_next_gameweek = opponent_team from next 'GW' for each player (element)
-    data_processed['opponent_next_gameweek'] = data_processed.sort_values('kickoff_time').groupby(['season', 'element'])['opponent_team'].shift(-1)
-    data_processed = data_processed.dropna(subset=['opponent_next_gameweek']).astype({'opponent_next_gameweek': int})
+    if opponent_team_stats:
+        seasons = ['2016-17', '2017-18', '2018-19', '2019-20', '2020-21', '2021-22']
+        team_stats = {}
+        for season in seasons:
+            team_stats[season] = load_understat_team_stats(season)
 
-    master_team_list = load_master_team_list()
+        # add column where opponent_next_gameweek = opponent_team from next 'GW' for each player (element)
+        data_processed['opponent_next_gameweek'] = data_processed.sort_values('kickoff_time').groupby(['season', 'element'])['opponent_team'].shift(-1)
+        data_processed = data_processed.dropna(subset=['opponent_next_gameweek']).astype({'opponent_next_gameweek': int})
 
-    # for every row, get mean stats from last two months for each next gameweek opponent team
-    opponent_data = data_processed.apply(lambda row: add_team_stats(row, master_team_list), axis=1)
-    df_opponent = pd.concat([r for r in opponent_data], ignore_index=True)
-    data_processed = pd.concat([data_processed, df_opponent.set_index(data_processed.index)], axis=1)
+        master_team_list = load_master_team_list()
+
+        # for every row, get mean stats from last two months for each next gameweek opponent team
+        opponent_data = data_processed.apply(lambda row: get_oponent_team_stats(row, master_team_list, team_stats), axis=1)
+
+        df_opponent_data = pd.concat([r for r in opponent_data], ignore_index=True)
+        data_processed = pd.concat([data_processed, df_opponent_data.set_index(data_processed.index)], axis=1)
 
     if rolling_features:
         data_processed = create_rolling_features(data_processed, rolling_columns, rolling_times)
