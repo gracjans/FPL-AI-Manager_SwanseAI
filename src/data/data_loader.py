@@ -1,4 +1,6 @@
+import asyncio
 import os
+
 import aiohttp
 import pandas as pd
 from understat import Understat
@@ -33,6 +35,7 @@ def load_average_pts():
 
 
 async def get_league_table(season, start_date=None, end_date=None):
+    await asyncio.sleep(0.5)
     async with aiohttp.ClientSession() as session:
         understat = Understat(session)
         table = await understat.get_league_table("EPL", season, start_date=start_date, end_date=end_date)
