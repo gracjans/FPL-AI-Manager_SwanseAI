@@ -188,12 +188,14 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
         df_opponent_data = pd.concat([r for r in opponent_data], ignore_index=True)
         data_processed = pd.concat([data_processed, df_opponent_data.set_index(data_processed.index)], axis=1)
 
+        data_processed = data_processed.drop(['opponent_next_gameweek'], axis=1)
+
     if rolling_features:
         data_processed = create_rolling_features(data_processed, rolling_columns, rolling_times)
 
     # Drop the columns that are not needed for now
     data_processed = data_processed.drop(['fixture', 'kickoff_time', 'opponent_team', 'round',
-                                          'transfers_balance', 'opponent_next_gameweek'], axis=1)
+                                          'transfers_balance'], axis=1)
 
     # one-hot encode 'position' column
     data_processed = pd.get_dummies(data_processed, columns=['position'])
