@@ -195,13 +195,10 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
 
     # Drop the columns that are not needed for now
     data_processed = data_processed.drop(['fixture', 'kickoff_time', 'opponent_team', 'round',
-                                          'transfers_balance'], axis=1)
+                                          'transfers_balance', 'was_home'], axis=1)
 
     # one-hot encode 'position' column
     data_processed = pd.get_dummies(data_processed, columns=['position'])
-
-    # change 'was_home' column to binary
-    data_processed['was_home'] = data_processed['was_home'].map({True: 1, False: 0})
 
     # drop rows with NaN values
     data_processed.dropna(inplace=True)
