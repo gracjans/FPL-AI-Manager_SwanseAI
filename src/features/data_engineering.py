@@ -138,7 +138,8 @@ def get_oponent_team_stats(row, master_team_list, team_stats):
 
 
 def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True, test_subset: tuple = None, season: str = None,
-                            rolling_features: bool = False, rolling_columns: list = None, rolling_times: list = None, opponent_team_stats: bool = False):
+                            rolling_features: bool = False, rolling_columns: list = None, rolling_times: list = None,
+                            opponent_team_stats: bool = False, encode_position: bool = True):
     """
     Preprocesses the merged seasons data.
 
@@ -152,6 +153,8 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
         rolling_features: If True, the rolling features are created.
         rolling_times: If rolling_features is True, this parameter specifies the rolling times.
         rolling_columns: If rolling_features is True, this parameter specifies the features to be rolled.
+        opponent_team_stats: If True, there are features about next gameweek opponent team stats added.
+        encode_position: If true, the position feature is one hot encoded, else drop this feature.
     """
     target_features = ['name', 'GW', 'element', 'total_points_next_gameweek', 'season']
 
@@ -197,8 +200,11 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
     data_processed = data_processed.drop(['fixture', 'kickoff_time', 'opponent_team', 'round',
                                           'transfers_balance', 'was_home'], axis=1)
 
-    # one-hot encode 'position' column
-    data_processed = pd.get_dummies(data_processed, columns=['position'])
+    if encode_position:
+        # one-hot encode 'position' column
+        data_processed = pd.get_dummies(data_processed, columns=['position'])
+    else:
+        data_processed = data_processed.drop(['position'], axis=1)
 
     # drop rows with NaN values
     data_processed.dropna(inplace=True)
