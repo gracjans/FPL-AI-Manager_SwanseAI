@@ -17,6 +17,14 @@ def reverse_processing(x_data: np.array, x_data_scaler: MinMaxScaler, extracted_
     # reverse scaling of x data
     x = pd.DataFrame(x_data_scaler.inverse_transform(x_data), index=x_data.index, columns=x_data.columns)
 
+    # reverse encoding of position columns
+    position_columns = ['position_GK', 'position_DEF', 'position_MID', 'position_FWD']
+    positions_encoded = x[position_columns]
+    positions_decoded = pd.Series(positions_encoded.columns[np.where(positions_encoded != 0)[1]],
+                                  index=positions_encoded.index).apply(lambda r: r.split('_')[1]).rename('position')
+
+    x = pd.concat([x.drop(position_columns, axis=1), positions_decoded], axis=1)
+
     if extracted_target is not None:
         return pd.concat([extracted_target, x], axis=1)
     else:
