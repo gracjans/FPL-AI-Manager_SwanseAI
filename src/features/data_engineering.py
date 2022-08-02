@@ -139,7 +139,11 @@ def scrape_team_stats(row, master_team_list, table_dict):
 
 
 def get_oponent_team_stats(row, master_team_list, team_stats):
-    opponent_team = idx_to_team_name(master_team_list, row['opponent_next_gameweek'], row['season'])
+    if isinstance(row['opponent_next_gameweek'], int) or isinstance(row['opponent_next_gameweek'], float):
+        opponent_team = idx_to_team_name(master_team_list, row['opponent_next_gameweek'], row['season'])
+    else:
+        opponent_team = row['opponent_next_gameweek']
+
     date = str_date_days_forward(row['kickoff_time'].split('T')[0], 2)
     key = date + '_' + opponent_team
     return pd.DataFrame(team_stats[row['season']][key])
