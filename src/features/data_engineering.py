@@ -9,7 +9,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from src.data.data_loader import load_merged_gw, get_league_table, load_master_team_list, load_understat_team_stats
 from src.data.data_loader import load_players_raw
-from src.features.utils import idx_to_team_name, str_date_months_back, str_date_days_forward
+from src.features.utils import idx_to_team_name, str_date_months_back, str_date_days_forward, rename_teams
 
 
 def reverse_processing(x_data: np.array, x_data_scaler: MinMaxScaler, extracted_target: pd.DataFrame = None):
@@ -236,7 +236,7 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
     if rolling_features:
         data_processed = create_rolling_features(data_processed, rolling_columns, rolling_times)
 
-    # Drop the columns that are not needed for now
+    # Drop the columns that are not needed
     data_processed = data_processed.drop(['fixture', 'kickoff_time', 'opponent_team', 'round',
                                           'transfers_balance', 'was_home'], axis=1)
 
@@ -292,3 +292,104 @@ def __subset_train_test_split(x: pd.DataFrame, y: pd.DataFrame, test_subset: tup
     y_train = pd.concat([y_train, y.drop(y_test.index)])
 
     return x_train, x_test, y_train, y_test
+
+
+def preprocess_prediction_data(season: str, gw: int = None, rolling_columns: list = None, rolling_times: list = None,
+                               opponent_team_stats: bool = True):    # TODO: Refactor this beauties
+    """
+    Preprocessing pipeline for the prediction data.
+    NOTE: Data is prepared to make prediction on upcoming 4 gameweeks (after refactoring it should be parametrized)!
+    NOTE: Remember, that data need to me scaled before prediction!
+
+    :param season: data from which season to preprocess
+    :param gw: which gameweek to prepare prediction. If None, prepare prediction for latest gameweek
+    :param rolling_columns: list of columns to create rolling features for
+    :param rolling_times: list of times to create rolling features
+    :param opponent_team_stats: whether to include opponent team stats in the dataframe
+    """
+    target_features = ['name', 'element', 'team', 'GW', 'season', 'opponent_next_gameweek']
+
+    data_merged_path = os.path.dirname(os.getcwd()) + '\\data\\raw\\Fantasy-Premier-League\\'
+
+    fixtures = pd.read_csv(data_merged_path + f'{season}/fixtures.csv')
+    teams = pd.read_csv(data_merged_path + f'{season}/teams.csv')
+    teams['name'] = rename_teams(teams['name'])
+
+    team_a_name = fixtures['team_a'].apply(lambda x: teams[teams['id'] == x]['name'].values[0])
+    team_h_name = fixtures['team_h'].apply(lambda x: teams[teams['id'] == x]['name'].values[0])
+
+    fixtures.insert(list(fixtures.columns).index('team_a'), 'team_a_name', team_a_name)
+    fixtures.insert(list(fixtures.columns).index('team_h'), 'team_h_name', team_h_name)
+
+    merged_gw = pd.read_csv(data_merged_path + f'{season}/gws/merged_gw.csv')
+
+    drop_features = ['own_goals', 'penalties_missed', 'penalties_saved', 'red_cards']
+    merged_gw = merged_gw.drop(drop_features, axis=1)
+
+    merged_gw.sort_values('kickoff_time', inplace=True, ignore_index=True)
+    merged_gw['season'] = season
+
+    merged_gw['team'] = rename_teams(merged_gw['team'])
+
+    data_processed = merged_gw.copy()
+
+    # get maximum value of 'GW' in data_processed
+    max_gw = data_processed['GW'].max()
+
+    if max_gw < gw:
+        raise ValueError(f'There is no GW{gw} data available in {season} season.')
+
+    # drop rows with gw value greater than gw
+    if gw is not None:
+        data_processed = data_processed[data_processed['GW'] <= gw]
+
+    # Change 'team_h_score' and 'team_a_score' to 'player_team_score' and 'opponent_team_score'
+    data_processed = update_team_score_feature(data_processed)
+
+    data_processed = create_rolling_features(data_processed, rolling_columns, rolling_times)
+
+    # get rows with GW = max_gw
+    data_processed = data_processed[data_processed['GW'] == gw]
+
+    # group rows by 'name' and 'element' and drop that with higher 'kickoff_time'
+    data_processed = data_processed.sort_values('kickoff_time', ascending=False).groupby(['name', 'element']).head(1)
+    data_processed.sort_values('kickoff_time', inplace=True)
+
+    if opponent_team_stats:
+        # add column 'opponent_next_gameweek' to data_processed from fixtures, where event is GW + 1
+        data_processed['opponent_next_gameweek'] = data_processed.apply(lambda row: fixtures[((fixtures['event'] == row['GW'] + 1) | (fixtures['event'] == row['GW'] + 2) | (fixtures['event'] == row['GW'] + 3) | (fixtures['event'] == row['GW'] + 4)) & ((fixtures['team_h_name'] == row['team']) | (fixtures['team_a_name'] == row['team']))][['team_a_name', 'team_h_name']].values, axis=1)
+
+        # flatten the list of opponent_next_gameweek
+        data_processed['opponent_next_gameweek'] = data_processed['opponent_next_gameweek'].apply(lambda lists: [item for sublist in lists for item in sublist])
+
+        # remove player team from opponent_next_gameweek list
+        data_processed['opponent_next_gameweek'] = data_processed.apply(lambda row: [team for team in row['opponent_next_gameweek'] if team != row['team']], axis=1)
+
+        data_processed = data_processed.explode('opponent_next_gameweek')
+
+        master_team_list = load_master_team_list()
+        team_stats = {season: load_understat_team_stats(season)}
+
+        # for every row, get mean stats from last two months for each next gameweek opponent team
+        try:
+            opponent_data = data_processed.apply(lambda row: get_oponent_team_stats(row, master_team_list, team_stats), axis=1)
+        except KeyError:
+            scrape_team_stats_season_loop(data_processed, season, master_team_list)
+            team_stats = {season: load_understat_team_stats(season)}
+            opponent_data = data_processed.apply(lambda row: get_oponent_team_stats(row, master_team_list, team_stats), axis=1)
+
+        df_opponent_data = pd.concat([r for r in opponent_data], ignore_index=True)
+        data_processed = pd.concat([data_processed, df_opponent_data.set_index(data_processed.index)], axis=1)
+
+    data_processed = data_processed.drop(['fixture', 'kickoff_time', 'opponent_team', 'round',
+                                          'transfers_balance', 'was_home', 'xP'], axis=1)
+
+    data_processed = pd.get_dummies(data_processed, columns=['position'])
+
+    # print if there are any NaN values in data_processed
+    print('Are there any NaN values? -', data_processed.isnull().values.any())
+
+    prediction_data_extract_target = data_processed[target_features]
+    x_prediction = data_processed.drop(target_features, axis=1)
+
+    return x_prediction, prediction_data_extract_target
