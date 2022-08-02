@@ -107,7 +107,11 @@ def create_rolling_features(df, rolling_columns, times):
 
 def scrape_team_stats(row, master_team_list, table_dict):
     columns_to_get = ['Position', 'PPDA', 'OPPDA', 'G', 'GA', 'xG', 'NPxG', 'xGA', 'NPxGA', 'NPxGD', 'DC', 'ODC', 'xPTS']
-    opponent_team = idx_to_team_name(master_team_list, row['opponent_next_gameweek'], row['season'])
+
+    if isinstance(row['opponent_next_gameweek'], int) or isinstance(row['opponent_next_gameweek'], float):
+        opponent_team = idx_to_team_name(master_team_list, row['opponent_next_gameweek'], row['season'])
+    else:
+        opponent_team = row['opponent_next_gameweek']
 
     season_year = row['season'].split('-')[0]
     date = str_date_days_forward(row['kickoff_time'].split('T')[0], 2)
