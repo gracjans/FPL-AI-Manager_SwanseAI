@@ -1,4 +1,7 @@
 import asyncio
+import json
+import os
+import time
 
 import numpy as np
 import pandas as pd
@@ -140,6 +143,27 @@ def scrape_team_stats(row, master_team_list, table_dict):
         print(len_dict)
 
     return True
+
+
+def scrape_team_stats_season_loop(data, season, master_team_list):
+    table_dict = load_understat_team_stats(season)
+    result = None
+    data_season = data[data['season'] == season].copy()
+    print('start scraping season: ', season)
+
+    while result is None:
+        try:
+            # connect
+            result = data_season.apply(lambda row: scrape_team_stats(row, master_team_list, table_dict), axis=1)
+        except ConnectionError:
+            print('error')
+            time.sleep(5)
+            pass
+
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    with open(root_dir + f'/data/raw/Understat/team-stats_{season}.json', 'w') as convert_file:
+        convert_file.write(json.dumps(table_dict))
+    print('End of scraping')
 
 
 def get_oponent_team_stats(row, master_team_list, team_stats):
