@@ -16,3 +16,16 @@ def str_date_months_back(date: str, months_back: int):
 def str_date_days_forward(date: str, days_forward: int):
     # get date months back from date
     return (datetime.datetime.strptime(date, '%Y-%m-%d') + datetime.timedelta(days=days_forward)).strftime('%Y-%m-%d')
+
+
+def rename_teams(teams_column: pd.Series):
+    # Rename the teams name, that they are compatible with the teams names from Understat data.
+    teams_column.replace('Man City', 'Manchester City', inplace=True)
+    teams_column.replace('Man Utd', 'Manchester United', inplace=True)
+    teams_column.replace('Spurs', 'Tottenham', inplace=True)
+    teams_column.replace('West Brom', 'West Bromwich Albion', inplace=True)
+    teams_column.replace('Newcastle', 'Newcastle United', inplace=True)
+    teams_column.replace('Wolves', 'Wolverhampton Wanderers', inplace=True)
+    teams_column.replace('Sheffield Utd', 'Sheffield United', inplace=True)
+
+    return teams_column
