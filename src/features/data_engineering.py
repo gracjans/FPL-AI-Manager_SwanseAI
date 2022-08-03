@@ -340,8 +340,21 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
 
     data_processed = create_rolling_features(data_processed, rolling_columns, rolling_times)
 
-    # get rows with GW = max_gw
+    data_processed_1_prev_gw = data_processed[data_processed['GW'] == gw - 1]
+    data_processed_2_prev_gw = data_processed[data_processed['GW'] == gw - 2]
+
+    # get rows with GW = gw
     data_processed = data_processed[data_processed['GW'] == gw]
+
+    # get players from previous GW, which are missing in the current GW
+    missing_players = data_processed_1_prev_gw[~data_processed_1_prev_gw['name'].isin(data_processed['name'])]
+
+    # add missing players from previous GW to the current GW
+    data_processed = pd.concat([data_processed, missing_players])
+
+    # look back also for previous previous GW, to check if there are still missing players (there is low probability, that team isnt playing for two GWs in a row)
+    missing_players_2 = data_processed_2_prev_gw[~data_processed_2_prev_gw['name'].isin(data_processed['name'])]
+    data_processed = pd.concat([data_processed, missing_players_2])
 
     # group rows by 'name' and 'element' and drop that with higher 'kickoff_time'
     data_processed = data_processed.sort_values('kickoff_time', ascending=False).groupby(['name', 'element']).head(1)
