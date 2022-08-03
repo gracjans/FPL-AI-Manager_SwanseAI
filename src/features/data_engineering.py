@@ -141,7 +141,7 @@ def scrape_team_stats_season_loop(data, season, master_team_list):
     table_dict = load_understat_team_stats(season)
     result = None
     data_season = data[data['season'] == season].copy()
-    print('start scraping season: ', season)
+    print('start scraping missing teams data season: ', season)
 
     while result is None:
         try:
