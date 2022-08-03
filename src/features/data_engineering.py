@@ -362,7 +362,11 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
 
     if opponent_team_stats:
         # add column 'opponent_next_gameweek' to data_processed from fixtures, where event is GW + 1
-        data_processed['opponent_next_gameweek'] = data_processed.apply(lambda row: fixtures[((fixtures['event'] == row['GW'] + 1) | (fixtures['event'] == row['GW'] + 2) | (fixtures['event'] == row['GW'] + 3) | (fixtures['event'] == row['GW'] + 4)) & ((fixtures['team_h_name'] == row['team']) | (fixtures['team_a_name'] == row['team']))][['team_a_name', 'team_h_name']].values, axis=1)
+        actual_gw = data_processed['GW'].max()
+        data_processed['opponent_next_gameweek'] = data_processed.apply(lambda row: fixtures[((fixtures['event'] == actual_gw + 1)
+                                                | (fixtures['event'] == actual_gw + 2) | (fixtures['event'] == actual_gw + 3)
+                                                | (fixtures['event'] == actual_gw + 4)) & ((fixtures['team_h_name'] == row['team'])
+                                                | (fixtures['team_a_name'] == row['team']))][['team_a_name', 'team_h_name']].values, axis=1)
 
         # flatten the list of opponent_next_gameweek
         data_processed['opponent_next_gameweek'] = data_processed['opponent_next_gameweek'].apply(lambda lists: [item for sublist in lists for item in sublist])
