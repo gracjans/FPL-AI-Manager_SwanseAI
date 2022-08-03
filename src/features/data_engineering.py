@@ -286,7 +286,7 @@ def __subset_train_test_split(x: pd.DataFrame, y: pd.DataFrame, test_subset: tup
     return x_train, x_test, y_train, y_test
 
 
-def preprocess_prediction_data(season: str, gw: int = None, rolling_columns: list = None, rolling_times: list = None,
+def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = None, rolling_times: list = None,
                                opponent_team_stats: bool = True):    # TODO: Refactor this beauties
     """
     Preprocessing pipeline for the prediction data.
