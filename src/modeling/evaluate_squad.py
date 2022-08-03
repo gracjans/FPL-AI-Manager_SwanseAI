@@ -26,7 +26,11 @@ def squad_selection_without_constraints(predictions_merged: pd.DataFrame, season
     predictions_merged = predictions_merged.sort_values(by='predicted_total_points_next_gameweek', ascending=False)
 
     # get first row from predictions_merged and double 'total_points_next_gameweek' value, because this player would be chosen as a capitan
-    predictions_merged.iloc[0, predictions_merged.columns.get_loc('total_points_next_gameweek')] *= 2
+
+    try:
+        predictions_merged.iloc[0, predictions_merged.columns.get_loc('total_points_next_gameweek')] *= 2
+    except IndexError:
+        raise IndexError(f"There are no predictions for {season} {gameweek}GW!")
 
     # separate players by position and get dataframe with best squad in given formation
     df_top_11 = pd.DataFrame()
