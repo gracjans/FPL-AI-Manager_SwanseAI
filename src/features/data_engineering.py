@@ -299,7 +299,8 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
     :param rolling_times: list of times to create rolling features
     :param opponent_team_stats: whether to include opponent team stats in the dataframe
     """
-    target_features = ['name', 'element', 'team', 'GW', 'season', 'opponent_next_gameweek']
+    target_features = ['name', 'element', 'team', 'GW', 'season', 'opponent_next_gameweek', 'value',
+                       'position_GK', 'position_DEF', 'position_MID', 'position_FWD']
 
     data_merged_path = os.path.dirname(os.getcwd()) + '\\data\\raw\\Fantasy-Premier-League\\'
 
@@ -399,6 +400,15 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
     print('Are there any NaN values? -', data_processed.isnull().values.any())
 
     prediction_data_extract_target = data_processed[target_features]
-    x_prediction = data_processed.drop(target_features, axis=1)
 
-    return x_prediction, prediction_data_extract_target
+    # reverse encoding of position columns
+    position_columns = ['position_GK', 'position_DEF', 'position_MID', 'position_FWD']
+    positions_encoded = prediction_data_extract_target[position_columns]
+    positions_decoded = pd.Series(positions_encoded.columns[np.where(positions_encoded != 0)[1]],
+                                  index=positions_encoded.index).apply(lambda r: r.split('_')[1]).rename('position')
+
+    target_extracted = pd.concat([prediction_data_extract_target.drop(position_columns, axis=1), positions_decoded], axis=1)
+
+    x_prediction = data_processed.drop(target_features[:target_features.index('value')], axis=1)
+
+    return x_prediction, target_extracted
