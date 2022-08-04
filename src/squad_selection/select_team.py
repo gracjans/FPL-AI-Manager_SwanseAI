@@ -71,17 +71,26 @@ def select_team(expected_scores, prices, positions, clubs, total_budget=100, sub
 def print_selected_team(predictions, decisions, captain_decisions, sub_decisions):
     for i in range(predictions.shape[0]):
         if decisions[i].value() != 0:
-            display(Markdown("**{}** Points = {}, Price = {}".format(predictions.name[i], predictions.total_points[i], predictions.value[i])))
+            display(Markdown("**{}** Predicted points = {}, Price = {}, Position = {}".format(predictions.name[i],
+                                                                     round(float(predictions.predicted_total_points_next_gameweek[i]), 2),
+                                                                     predictions.value[i],
+                                                                     predictions.position[i])))
     print()
     print("Subs:")
     # print results
     for i in range(predictions.shape[0]):
         if sub_decisions[i].value() == 1:
-            display(Markdown("**{}** Points = {}, Price = {}".format(predictions.name[i], predictions.total_points[i], predictions.value[i])))
+            display(Markdown("**{}** Predicted points = {}, Price = {}, Position = {}".format(predictions.name[i],
+                                                                     round(float(predictions.predicted_total_points_next_gameweek[i]), 2),
+                                                                     predictions.value[i],
+                                                                     predictions.position[i])))
 
     print()
     print("Captain:")
     # print results
     for i in range(predictions.shape[0]):
         if captain_decisions[i].value() == 1:
-            display(Markdown("**{}** Points = {}, Price = {}".format(predictions.name[i], predictions.total_points[i], predictions.value[i])))
+            display(Markdown("**{}** Predicted points = {}, Price = {}, Position = {}".format(predictions.name[i],
+                                                                     round(float(predictions.predicted_total_points_next_gameweek[i]), 2),
+                                                                     predictions.value[i],
+                                                                     predictions.position[i])))
