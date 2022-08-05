@@ -15,4 +15,5 @@ ___
 but needs some refactoring and adaptation for more convenient use. 
 Tests are also a must. Full automation is planned, as currently it is the user who has to click out changes.*
 
-*A detailed report about data preparation and model training will also be prepared.*
+*A detailed report about data preparation and model training will also be prepared 
+alongside with documentation and 'how to use' instructions.*
