@@ -4,7 +4,7 @@
 
 **SwanseAI - FPL AI Manager** is a package that uses deep learning techniques to select the right team and transfers in the Fantasy Premier League game.
 
-SwanseAI team's id for the 2022/23 season is **[6703146](fantasy.premierleague.com/entry/6703146/history)**.
+SwanseAI team's id for the 2022/23 season is **[6703146](https://fantasy.premierleague.com/entry/6703146/history)**.
 
 ___
 
