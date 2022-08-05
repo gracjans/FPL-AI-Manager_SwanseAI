@@ -18,6 +18,6 @@ Tests are also a must. Full automation is planned, as currently it is the user w
 alongside with documentation and 'how to use' instructions.*
 
 ___
-### SwanseAI club logo created using DALLE-2
+#### [SwanseAI club logo created using DALLE-2](https://labs.openai.com/s/a6nrrHG2MzP2b3LsqC8S7Vw1)
 
 <img src="https://user-images.githubusercontent.com/77151129/183114461-188e5dfc-5690-4179-b358-f8a2507e8547.png" alt="drawing" width="190"/>
