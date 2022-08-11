@@ -28,8 +28,9 @@ def download_newest_fpl_data(season: str):
     print('Download complete')
 
 
-def predict_and_select_team(season: str, gameweek: int, model_path_from_root: str, scaler_path_from_root: str):
-    download_newest_fpl_data(season)
+def predict_and_select_team(season: str, gameweek: int, model_path_from_root: str, scaler_path_from_root: str, download_newest_data: bool = True):
+    if download_newest_data:
+        download_newest_fpl_data(season)
 
     rolling_columns = ['assists', 'bonus', 'bps', 'clean_sheets',
                        'creativity', 'goals_conceded', 'goals_scored',
