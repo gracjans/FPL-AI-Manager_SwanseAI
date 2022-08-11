@@ -290,7 +290,7 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
                                opponent_team_stats: bool = True):    # TODO: Refactor this beauties
     """
     Preprocessing pipeline for the prediction data.
-    NOTE: Data is prepared to make prediction on upcoming 4 gameweeks (after refactoring it should be parametrized)!
+    NOTE: Data is prepared to make prediction on upcoming 3 gameweeks (after refactoring it should be parametrized)!
     NOTE: Remember, that data need to me scaled before prediction!
 
     :param season: data from which season to preprocess
@@ -365,8 +365,8 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
         # add column 'opponent_next_gameweek' to data_processed from fixtures, where event is GW + 1
         actual_gw = data_processed['GW'].max()
         data_processed['opponent_next_gameweek'] = data_processed.apply(lambda row: fixtures[((fixtures['event'] == actual_gw + 1)
-                                                | (fixtures['event'] == actual_gw + 2) | (fixtures['event'] == actual_gw + 3)
-                                                | (fixtures['event'] == actual_gw + 4)) & ((fixtures['team_h_name'] == row['team'])
+                                                | (fixtures['event'] == actual_gw + 2) | (fixtures['event'] == actual_gw + 3))
+                                                & ((fixtures['team_h_name'] == row['team'])
                                                 | (fixtures['team_a_name'] == row['team']))][['team_a_name', 'team_h_name']].values, axis=1)
 
         # flatten the list of opponent_next_gameweek
