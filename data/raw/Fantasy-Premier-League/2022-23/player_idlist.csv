@@ -46,7 +46,6 @@ Ezri,Konsa Ngoyo,44
 Leon,Bailey,45
 Douglas Luiz,Soares de Paulo,46
 Jacob,Ramsey,47
-Carney,Chukwuemeka,48
 Tim,Iroegbunam,49
 Diego Carlos,Santos Silva,50
 Anwar,El Ghazi,51
@@ -115,14 +114,12 @@ Adam,Lallana,101
 Jason,Steele,102
 Danny,Welbeck,103
 Pascal,Groß,104
-Shane,Duffy,105
 Lewis,Dunk,106
 Solly,March,107
 Adam,Webster,108
 Joël,Veltman,109
 Neal,Maupay,110
 Leandro,Trossard,111
-Marc,Cucurella Saseta,112
 Robert,Sánchez,113
 Tariq,Lamptey,114
 Steven,Alzate,115
@@ -140,6 +137,9 @@ Kacper,Kozłowski,126
 Kjell,Scherpen,542
 Matt,Clarke,543
 Jan Paul,van Hecke,544
+Levi,Colwill,559
+Carney,Chukwuemeka,48
+Marc,Cucurella Saseta,112
 César,Azpilicueta,127
 Thiago,Emiliano da Silva,128
 Marcos,Alonso,129
@@ -222,7 +222,10 @@ Niels,Nkounkou,198
 James,Tarkowski,199
 Rúben,Nascimento Vinagre,531
 Dwight,McNeil,534
+Stanley,Mills,560
+Lewis,Warrington,561
 Bernd,Leno,2
+Shane,Duffy,105
 Tom,Cairney,200
 Tim,Ream,201
 Anthony,Knockaert,202
@@ -248,6 +251,7 @@ Andreas,Hoelgebaum Pereira,346
 Tyrese,Francois,521
 Kevin,Mbabu,532
 Luke,Harris,546
+Manor,Solomon,562
 Kasper,Schmeichel,248
 Jonny,Evans,249
 Ryan,Bertrand,250
@@ -306,6 +310,7 @@ Darko,Gyabi,247
 Tyler,Adams,506
 Luis,Sinisterra Lucumí,508
 Cody,Drameh,547
+Archie,Gray,565
 James,Milner,274
 Jordan,Henderson,275
 Joel,Matip,276
@@ -335,6 +340,8 @@ Rhys,Williams,498
 Ben,Davies,499
 Sepp,van den Berg,500
 Nathaniel,Phillips,501
+Luke,Chambers,563
+Stefan,Bajcetic,564
 Kyle,Walker,299
 Ilkay,Gündogan,300
 Kevin,De Bruyne,301
@@ -352,7 +359,7 @@ Phil,Foden,314
 Rodrigo,Hernandez,315
 Cole,Palmer,316
 James,McAtee,317
-Erling,Håland,318
+Erling,Haaland,318
 Julián,Álvarez,319
 Luke,Mbete-Tabu,320
 Josh,Wilson-Esbrand,322
@@ -360,6 +367,7 @@ Liam,Delap,323
 Stefan,Ortega Moreno,324
 Kalvin,Phillips,325
 Scott,Carson,502
+Rico,Lewis,573
 Cristiano Ronaldo,dos Santos Aveiro,326
 David,De Gea Quintana,327
 Phil,Jones,328
@@ -387,6 +395,8 @@ Christian,Eriksen,519
 Lisandro,Martínez,533
 Amad,Diallo,550
 Zidane,Iqbal,551
+Alejandro,Garnacho,569
+James,Garner,570
 Jonjo,Shelvey,349
 Matt,Ritchie,350
 Federico,Fernández,351
@@ -532,6 +542,8 @@ Flynn,Downes,509
 Gianluca,Scamacca,529
 Harrison,Ashby,555
 Conor,Coventry,556
+Darren,Randolph,571
+Armstrong,Oko-Flex,572
 Willy,Boly,474
 Conor,Coady,475
 Raúl,Jiménez,476
@@ -557,3 +569,6 @@ João Filipe Iria,Santos Moutinho,503
 Nathan,Collins,516
 Jackson,Smith,557
 Hugo,Bueno López,558
+Joseph,Hodge,566
+Connor,Ronan,567
+Chem,Campbell,568
