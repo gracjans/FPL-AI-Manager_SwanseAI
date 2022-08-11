@@ -32,5 +32,6 @@ def rename_teams(teams_column: pd.Series):
     teams_column.replace('Newcastle', 'Newcastle United', inplace=True)
     teams_column.replace('Wolves', 'Wolverhampton Wanderers', inplace=True)
     teams_column.replace('Sheffield Utd', 'Sheffield United', inplace=True)
+    teams_column.replace("Nott'm Forest", 'Nottingham Forest', inplace=True)
 
     return teams_column
