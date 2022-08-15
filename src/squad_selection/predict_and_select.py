@@ -44,7 +44,21 @@ def get_manager_squad(manager_id: int, gameweek: int):
     return squad
 
 
-def predict_and_select_team(season: str, gameweek: int, model_path_from_root: str, scaler_path_from_root: str, download_newest_data: bool = True):
+def get_actual_chance_playing_next_round():
+
+    url = 'https://fantasy.premierleague.com/api/bootstrap-static/'
+    r = requests.get(url)
+    bootstrap = r.json()
+
+    chance_playing = {}
+    for player in bootstrap['elements']:
+        chance_playing[player['id']] = player['chance_of_playing_next_round']
+
+    return chance_playing
+
+
+def predict_and_select_team(season: str, gameweek: int, model_path_from_root: str, scaler_path_from_root: str,
+                            download_newest_data: bool = True, get_actual_chance_playing: bool = True):
     if download_newest_data:
         download_newest_fpl_data(season)
 
@@ -82,6 +96,13 @@ def predict_and_select_team(season: str, gameweek: int, model_path_from_root: st
     # reset index
     prediction_df_sum = prediction_df_sum.reset_index(drop=True)
 
+    if get_actual_chance_playing:
+        actual_chance_playing = get_actual_chance_playing_next_round()
+        for id in actual_chance_playing:
+            if actual_chance_playing[id] is not None and actual_chance_playing[id] != 100:
+                prediction_df_sum.loc[prediction_df_sum['element'] == id, 'predicted_total_points_next_gameweek'] = \
+                    prediction_df_sum.loc[prediction_df_sum['element'] == id, 'predicted_total_points_next_gameweek'] * (int(actual_chance_playing[id]) / 100)
+
     decisions, captain_decisions, sub_decisions = select_team(prediction_df_sum.predicted_total_points_next_gameweek.values,
                                                               prediction_df_sum.value.values, prediction_df_sum.position_id.values,
                                                               prediction_df_sum.team.values, total_budget=100, sub_factor=0.15)
@@ -89,7 +110,8 @@ def predict_and_select_team(season: str, gameweek: int, model_path_from_root: st
     print_selected_team(prediction_df_sum, decisions, captain_decisions, sub_decisions)
 
 
-def predict_and_select_transfer(season: str, gameweek: int, model_path_from_root: str, scaler_path_from_root: str, download_newest_data: bool = True):
+def predict_and_select_transfer(season: str, gameweek: int, model_path_from_root: str, scaler_path_from_root: str,
+                                download_newest_data: bool = True, get_actual_chance_playing: bool = True):
     # TODO: merge this function with predict_and_select_team, it's almos the same!
     if download_newest_data:
         download_newest_fpl_data(season)
@@ -127,6 +149,13 @@ def predict_and_select_transfer(season: str, gameweek: int, model_path_from_root
 
     # reset index
     prediction_df_sum = prediction_df_sum.reset_index(drop=True)
+
+    if get_actual_chance_playing:
+        actual_chance_playing = get_actual_chance_playing_next_round()
+        for id in actual_chance_playing:
+            if actual_chance_playing[id] is not None and actual_chance_playing[id] != 100:
+                prediction_df_sum.loc[prediction_df_sum['element'] == id, 'predicted_total_points_next_gameweek'] = \
+                    prediction_df_sum.loc[prediction_df_sum['element'] == id, 'predicted_total_points_next_gameweek'] * (int(actual_chance_playing[id]) / 100)
 
     opt = TransferOptimiser(prediction_df_sum.predicted_total_points_next_gameweek.values,
                             prediction_df_sum.value.values, prediction_df_sum.value.values,
