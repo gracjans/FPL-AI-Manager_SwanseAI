@@ -218,7 +218,12 @@ def preprocess_seasons_data(data: pd.DataFrame = None, random_split: bool = True
         master_team_list = load_master_team_list()
 
         # for every row, get mean stats from last two months for each next gameweek opponent team
-        opponent_data = data_processed.apply(lambda row: get_oponent_team_stats(row, master_team_list, team_stats), axis=1)
+        try:
+            opponent_data = data_processed.apply(lambda row: get_oponent_team_stats(row, master_team_list, team_stats), axis=1)
+        except KeyError:
+            scrape_team_stats_season_loop(data_processed, season, master_team_list)
+            team_stats = {season: load_understat_team_stats(season)}
+            opponent_data = data_processed.apply(lambda row: get_oponent_team_stats(row, master_team_list, team_stats), axis=1)
 
         df_opponent_data = pd.concat([r for r in opponent_data], ignore_index=True)
         data_processed = pd.concat([data_processed, df_opponent_data.set_index(data_processed.index)], axis=1)
