@@ -5,6 +5,7 @@ import time
 
 import numpy as np
 import pandas as pd
+from aiohttp import ClientConnectorError
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from src.data.data_loader import load_merged_gw, get_league_table, load_master_team_list, load_understat_team_stats
@@ -147,7 +148,7 @@ def scrape_team_stats_season_loop(data, season, master_team_list):
         try:
             # connect
             result = data_season.apply(lambda row: scrape_team_stats(row, master_team_list, table_dict), axis=1)
-        except ConnectionError:
+        except ConnectionError or ClientConnectorError:
             print('error')
             time.sleep(5)
             pass
@@ -292,7 +293,7 @@ def __subset_train_test_split(x: pd.DataFrame, y: pd.DataFrame, test_subset: tup
 
 
 def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = None, rolling_times: list = None,
-                               opponent_team_stats: bool = True):    # TODO: Refactor this beauties
+                               opponent_team_stats: bool = True, position: str = 'all'):    # TODO: Refactor this beauties
     """
     Preprocessing pipeline for the prediction data.
     NOTE: Data is prepared to make prediction on upcoming 3 gameweeks (after refactoring it should be parametrized)!
@@ -303,6 +304,8 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
     :param rolling_columns: list of columns to create rolling features for
     :param rolling_times: list of times to create rolling features
     :param opponent_team_stats: whether to include opponent team stats in the dataframe
+    :param position: position to return data for. If 'all', return data for all positions.
+                     If 'field' return data for field positions (without goalkeeper)
     """
     target_features = ['name', 'element', 'team', 'GW', 'season', 'opponent_next_gameweek', 'value',
                        'position_GK', 'position_DEF', 'position_MID', 'position_FWD']
@@ -321,8 +324,25 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
 
     merged_gw = pd.read_csv(data_merged_path + f'{season}/gws/merged_gw.csv')
 
-    drop_features = ['own_goals', 'penalties_missed', 'penalties_saved', 'red_cards']
-    merged_gw = merged_gw.drop(drop_features, axis=1)
+    if position == 'all':
+        drop_features = ['own_goals', 'penalties_missed', 'penalties_saved', 'red_cards']
+        merged_gw = merged_gw.drop(drop_features, axis=1)
+    elif position == 'gk':
+        # get only goalkeeper data from merged_gw
+        merged_gw = merged_gw[merged_gw['position'] == 'GK']
+        drop_features_gk = ['assists', 'creativity', 'goals_scored', 'ict_index', 'own_goals', 'penalties_missed', 'red_cards', 'threat', 'yellow_cards']
+        merged_gw = merged_gw.drop(drop_features_gk, axis=1)
+        target_features.remove('position_DEF')
+        target_features.remove('position_MID')
+        target_features.remove('position_FWD')
+    elif position == 'field':
+        # get only field data from merged_gw
+        merged_gw = merged_gw[merged_gw['position'] != 'GK']
+        drop_features_field = ['own_goals', 'penalties_missed', 'penalties_saved', 'red_cards', 'saves']
+        merged_gw = merged_gw.drop(drop_features_field, axis=1)
+        target_features.remove('position_GK')
+    else:
+        raise ValueError(f'Position {position} is not valid!')
 
     merged_gw.sort_values('kickoff_time', inplace=True, ignore_index=True)
     merged_gw['season'] = season
@@ -407,7 +427,13 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
     prediction_data_extract_target = data_processed[target_features]
 
     # reverse encoding of position columns
-    position_columns = ['position_GK', 'position_DEF', 'position_MID', 'position_FWD']
+    if position == 'gk':
+        position_columns = ['position_GK']
+    elif position == 'field':
+        position_columns = ['position_DEF', 'position_MID', 'position_FWD']
+    else:
+        position_columns = ['position_GK', 'position_DEF', 'position_MID', 'position_FWD']
+
     positions_encoded = prediction_data_extract_target[position_columns]
     positions_decoded = pd.Series(positions_encoded.columns[np.where(positions_encoded != 0)[1]],
                                   index=positions_encoded.index).apply(lambda r: r.split('_')[1]).rename('position')
