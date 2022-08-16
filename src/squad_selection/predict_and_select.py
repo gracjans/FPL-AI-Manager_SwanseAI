@@ -155,8 +155,11 @@ def predict_and_select_transfer(season: str, gameweek: int, model_path_from_root
         y_pred_gk = pd.Series(model_gk.predict(x_scaler_gk.transform(x_prediction_gk)).reshape(-1, ), index=x_prediction_gk.index, name='predicted_total_points_next_gameweek')
         prediction_df_gk = pd.concat([y_pred_gk, x_target_gk], axis=1)
 
-        prediction_df = pd.concat([prediction_df_gk, prediction_df_field], axis=1)
-        return prediction_df_gk, prediction_df_field
+        # reset index
+        prediction_df_field = prediction_df_field.reset_index(drop=True)
+        prediction_df_gk = prediction_df_gk.reset_index(drop=True)
+
+        prediction_df = pd.concat([prediction_df_gk, prediction_df_field], axis=0)
 
     else:
         x_prediction, x_target = preprocess_prediction_data(season, gameweek, rolling_columns=rolling_columns,
