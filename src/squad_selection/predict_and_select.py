@@ -114,7 +114,8 @@ def predict_and_select_team(season: str, gameweek: int, model_path_from_root: st
 
 
 def predict_and_select_transfer(season: str, gameweek: int, model_path_from_root: list, scaler_path_from_root: list,
-                                download_newest_data: bool = True, get_actual_chance_playing: bool = True, position_separated: bool = False):
+                                download_newest_data: bool = True, get_actual_chance_playing: bool = True, position_separated: bool = False,
+                                budget_now: int = 0):
     """Model path from root = ['gk model path', 'field model path'] if position separated is True"""
     # TODO: merge this function with predict_and_select_team, it's almos the same!
     if download_newest_data:
@@ -203,7 +204,7 @@ def predict_and_select_transfer(season: str, gameweek: int, model_path_from_root
     # get indices of players in squad (index of row with matching 'element' value)
     indices = [prediction_df_sum.index[prediction_df_sum['element'] == player_id].tolist()[0] for player_id in squad]
 
-    transfer_in_decisions, transfer_out_decisions, decisions, sub_decisions, captain_decisions = opt.solve(indices, budget_now=0.0, sub_factor=0.15)
+    transfer_in_decisions, transfer_out_decisions, decisions, sub_decisions, captain_decisions = opt.solve(indices, budget_now=budget_now, sub_factor=0.15)
 
     print('\nSelected Transfers:')
     print_selected_transfer(prediction_df_sum, transfer_in_decisions, transfer_out_decisions)
