@@ -243,3 +243,5 @@ def predict_and_select_transfer(season: str, gameweek: int, model_path_from_root
     print_selected_transfer(prediction_df_sum, transfer_in_decisions, transfer_out_decisions)
     print('\nSelected Squad:')
     print_selected_team(prediction_df_sum, decisions, captain_decisions, sub_decisions)
+
+    return prediction_df_sum.sort_values(by=['predicted_total_points_next_gameweek'], ascending=False).head(15)
