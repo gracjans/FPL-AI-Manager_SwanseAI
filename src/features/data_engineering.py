@@ -354,7 +354,7 @@ def preprocess_prediction_data(season: str, gw: int, rolling_columns: list = Non
     # get maximum value of 'GW' in data_processed
     max_gw = data_processed['GW'].max()
 
-    if max_gw < gw:
+    if max_gw < gw != 7:    # GW 7 was special case, match round was postponedS
         raise ValueError(f'There is no GW{gw} data available in {season} season.')
 
     # drop rows with gw value greater than gw
