@@ -61,7 +61,8 @@ def get_actual_chance_playing_next_round():
 
 
 def predict_and_select_team(season: str, gameweek: int, model_path_from_root: str, scaler_path_from_root: str,
-                            download_newest_data: bool = True, get_actual_chance_playing: bool = True, position_separated: bool = False):
+                            download_newest_data: bool = True, get_actual_chance_playing: bool = True, position_separated: bool = False,
+                            budget_now: float = 100.0):
     if download_newest_data:
         download_newest_fpl_data(season)
 
@@ -141,7 +142,7 @@ def predict_and_select_team(season: str, gameweek: int, model_path_from_root: st
 
     decisions, captain_decisions, sub_decisions = select_team(prediction_df_sum.predicted_total_points_next_gameweek.values,
                                                               prediction_df_sum.value.values, prediction_df_sum.position_id.values,
-                                                              prediction_df_sum.team.values, total_budget=100, sub_factor=0.15)
+                                                              prediction_df_sum.team.values, total_budget=budget_now, sub_factor=0.15)
 
     print_selected_team(prediction_df_sum, decisions, captain_decisions, sub_decisions)
 
