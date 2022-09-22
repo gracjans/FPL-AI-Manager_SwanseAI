@@ -151,7 +151,7 @@ def predict_and_select_transfer(season: str, gameweek: int, model_path_from_root
                                 download_newest_data: bool = True, get_actual_chance_playing: bool = True, position_separated: bool = False,
                                 budget_now: int = 0):
     """Model path from root = ['gk model path', 'field model path'] if position separated is True"""
-    # TODO: merge this function with predict_and_select_team, it's almos the same!
+    # TODO: merge this function with predict_and_select_team, it's almost the same!
     if download_newest_data:
         download_newest_fpl_data(season)
 
